@@ -24,7 +24,9 @@ API 一覧と使い方は README.md を参照。
 
 ## 外部依存
 
-- モデル重み: `/home/animede/ComfyUI/models/` 配下を直接参照(pipeline.py 冒頭の定数)
+- モデル重み: `/home/animede/ComfyUI/models/` 配下を優先参照(pipeline.py 冒頭の定数)。
+  無ければ `_resolve_model_path()` が Comfy-Org / lightx2v の HF リポジトリから自動ダウンロードし、
+  通常の HF キャッシュに保存する(README.md の対応表を参照)
 - HF キャッシュ: `Qwen/Qwen-Image`(vae/text_encoder 等)、`Qwen/Qwen-Image-Edit-2509`(processor)
 - GPU: 空き VRAM 65GB 未満だと自動で `enable_model_cpu_offload()`(遅くなる)
 

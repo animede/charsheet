@@ -5,6 +5,7 @@ Qwen-Image-Edit パイプラインの構築・生成処理。
 poc/generate_qwen_edit.py を関数化したもの。モジュールレベルのシングルトンとして
 遅延ロード(初回生成リクエスト時にロードし、以後プロセス内に常駐)する。
 """
+import os
 import threading
 import time
 
@@ -19,20 +20,46 @@ from diffusers import (
 # QwenImageEditPipeline(旧形式)だとキャラクター同一性が崩れる(別人が生成される)。
 # ComfyUI ワークフローの TextEncodeQwenImageEditPlus に対応するのはこちら。
 from diffusers import QwenImageEditPlusPipeline
-from huggingface_hub import snapshot_download
+from huggingface_hub import hf_hub_download, snapshot_download
 from PIL import Image
 from safetensors.torch import load_file
 from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration, Qwen2Tokenizer
 
 from prompts import NEGATIVE_PROMPT
 
+# ローカル(ComfyUI)優先パス。存在しない場合は隣の HF リポジトリから自動ダウンロードする
+# (_resolve_model_path 参照。ダウンロード先は通常の HF キャッシュ、~/.cache/huggingface)。
 TRANSFORMER_PATH = "/home/animede/ComfyUI/models/diffusion_models/qwen_image_edit_2511_bf16.safetensors"
+TRANSFORMER_HF_REPO = "Comfy-Org/Qwen-Image-Edit_ComfyUI"
+TRANSFORMER_HF_FILE = "split_files/diffusion_models/qwen_image_edit_2511_bf16.safetensors"
+
 LORA_LIGHTNING_PATH = "/home/animede/ComfyUI/models/loras/Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors"
+LORA_LIGHTNING_HF_REPO = "lightx2v/Qwen-Image-Edit-2511-Lightning"
+LORA_LIGHTNING_HF_FILE = "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors"
+
 LORA_ANGLES_PATH = "/home/animede/ComfyUI/models/loras/Qwen-Edit-2509-Multiple-angles.safetensors"
+LORA_ANGLES_HF_REPO = "Comfy-Org/Qwen-Image-Edit_ComfyUI"
+LORA_ANGLES_HF_FILE = "split_files/loras/Qwen-Edit-2509-Multiple-angles.safetensors"
 
 # フォールバック用(2511 transformer と Multiple-angles LoRA が非互換だった場合)
 FALLBACK_TRANSFORMER_PATH = "/home/animede/ComfyUI/models/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors"
+FALLBACK_TRANSFORMER_HF_REPO = "Comfy-Org/Qwen-Image-Edit_ComfyUI"
+FALLBACK_TRANSFORMER_HF_FILE = "split_files/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors"
 FALLBACK_PREFIX = "model.diffusion_model."
+
+
+def _resolve_model_path(local_path: str, repo_id: str, repo_filename: str) -> str:
+    """ローカル(ComfyUI)にファイルがあればそれを使い、無ければ HF Hub から自動ダウンロードして
+    そのキャッシュパスを返す(2 回目以降はキャッシュヒットで再ダウンロードしない)。
+    """
+    if os.path.exists(local_path):
+        return local_path
+    print(f"[pipeline] {local_path} が見つからないため HF Hub からダウンロードします: "
+          f"{repo_id}/{repo_filename}")
+    downloaded = hf_hub_download(repo_id=repo_id, filename=repo_filename)
+    print(f"[pipeline] ダウンロード完了: {downloaded}")
+    return downloaded
+
 
 SHIFT = 3.0
 NUM_INFERENCE_STEPS = 4
@@ -58,10 +85,11 @@ def _load_transformer():
     まず 2511 bf16 を試し、LoRA 適用時に非互換エラーが出た場合は
     呼び出し側で 2509 fp8 にフォールバックする。
     """
+    path = _resolve_model_path(TRANSFORMER_PATH, TRANSFORMER_HF_REPO, TRANSFORMER_HF_FILE)
     config = QwenImageTransformer2DModel.load_config("Qwen/Qwen-Image-Edit-2509", subfolder="transformer")
     with init_empty_weights():
         transformer = QwenImageTransformer2DModel.from_config(config)
-    raw = load_file(TRANSFORMER_PATH, device="cuda:0" if torch.cuda.is_available() else "cpu")
+    raw = load_file(path, device="cuda:0" if torch.cuda.is_available() else "cpu")
     raw.pop("__index_timestep_zero__", None)
     raw = {k: v.to(torch.bfloat16) for k, v in raw.items()}
     transformer.load_state_dict(raw, strict=True, assign=True)
@@ -72,10 +100,13 @@ def _load_transformer():
 
 def _load_transformer_fallback():
     """2509 fp8 transformer をフォールバックとして読み込む(prefix 除去 + bf16 キャスト)。"""
+    path = _resolve_model_path(
+        FALLBACK_TRANSFORMER_PATH, FALLBACK_TRANSFORMER_HF_REPO, FALLBACK_TRANSFORMER_HF_FILE
+    )
     config = QwenImageTransformer2DModel.load_config("Qwen/Qwen-Image-Edit-2509", subfolder="transformer")
     with init_empty_weights():
         transformer = QwenImageTransformer2DModel.from_config(config)
-    raw = load_file(FALLBACK_TRANSFORMER_PATH, device="cuda:0" if torch.cuda.is_available() else "cpu")
+    raw = load_file(path, device="cuda:0" if torch.cuda.is_available() else "cpu")
     raw.pop("__index_timestep_zero__", None)
     stripped = {
         (k[len(FALLBACK_PREFIX):] if k.startswith(FALLBACK_PREFIX) else k): v.to(torch.bfloat16)
@@ -112,8 +143,12 @@ def _build_pipeline(transformer):
 
 def _apply_loras(pipe):
     """Lightning + Multiple-angles LoRA を両方適用して有効化する。"""
-    pipe.load_lora_weights(LORA_LIGHTNING_PATH, adapter_name="lightning")
-    pipe.load_lora_weights(LORA_ANGLES_PATH, adapter_name="angles")
+    lightning_path = _resolve_model_path(
+        LORA_LIGHTNING_PATH, LORA_LIGHTNING_HF_REPO, LORA_LIGHTNING_HF_FILE
+    )
+    angles_path = _resolve_model_path(LORA_ANGLES_PATH, LORA_ANGLES_HF_REPO, LORA_ANGLES_HF_FILE)
+    pipe.load_lora_weights(lightning_path, adapter_name="lightning")
+    pipe.load_lora_weights(angles_path, adapter_name="angles")
     pipe.set_adapters(["lightning", "angles"], adapter_weights=[1.0, 1.0])
 
 

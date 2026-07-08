@@ -26,15 +26,25 @@ cd /home/animede/charsheet
 
 ## 外部依存(モデルファイル)
 
-以下は ComfyUI のモデルディレクトリを直接参照している(pipeline.py 冒頭の定数):
+以下は ComfyUI のモデルディレクトリを優先的に参照する(pipeline.py 冒頭の定数)。
+**該当パスにファイルが無い場合は、自動で Hugging Face Hub からダウンロードして
+通常の HF キャッシュ(`~/.cache/huggingface/hub/`)に保存する**(2 回目以降は
+再ダウンロードしない)。
 
-- transformer: `/home/animede/ComfyUI/models/diffusion_models/qwen_image_edit_2511_bf16.safetensors`
-- LoRA: `/home/animede/ComfyUI/models/loras/Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors`
-- LoRA: `/home/animede/ComfyUI/models/loras/Qwen-Edit-2509-Multiple-angles.safetensors`
+| ローカル優先パス(ComfyUI) | 無い場合の自動ダウンロード元 |
+|---|---|
+| `/home/animede/ComfyUI/models/diffusion_models/qwen_image_edit_2511_bf16.safetensors` | `Comfy-Org/Qwen-Image-Edit_ComfyUI`(split_files/diffusion_models/) |
+| `/home/animede/ComfyUI/models/loras/Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors` | `lightx2v/Qwen-Image-Edit-2511-Lightning` |
+| `/home/animede/ComfyUI/models/loras/Qwen-Edit-2509-Multiple-angles.safetensors` | `Comfy-Org/Qwen-Image-Edit_ComfyUI`(split_files/loras/) |
+| フォールバック用 `qwen_image_edit_2509_fp8_e4m3fn.safetensors` | `Comfy-Org/Qwen-Image-Edit_ComfyUI`(split_files/diffusion_models/) |
 
 vae / text_encoder / tokenizer / scheduler は HuggingFace キャッシュ(`Qwen/Qwen-Image`)、
-processor は `Qwen/Qwen-Image-Edit-2509` から取得。背景除去モデル(isnet-general-use,
-~179MB)は初回実行時に `~/.u2net/` へ自動ダウンロードされる。
+processor は `Qwen/Qwen-Image-Edit-2509` から取得(こちらは元々 HF から取得する設計で変更なし)。
+背景除去モデル(isnet-general-use, ~179MB)は初回実行時に `~/.u2net/` へ自動ダウンロードされる。
+
+transformer は数 GB〜20GB 程度あるため、ComfyUI 側にファイルが無い環境での初回ロードは
+ダウンロードに時間がかかる(回線速度に依存)。ダウンロード中はサーバーログ
+(`server.log`)に進捗が出力される。
 
 ## API 一覧
 
