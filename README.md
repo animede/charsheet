@@ -5,6 +5,7 @@
 Web アプリケーションです。
 
 仕様書: `docs/character_sheet_spec.md`
+使い方マニュアル(エンドユーザー向け): `docs/user_manual.md`
 
 ## セットアップ
 
