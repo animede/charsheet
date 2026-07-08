@@ -29,20 +29,33 @@ from prompts import NEGATIVE_PROMPT
 
 # ローカル(ComfyUI)優先パス。存在しない場合は隣の HF リポジトリから自動ダウンロードする
 # (_resolve_model_path 参照。ダウンロード先は通常の HF キャッシュ、~/.cache/huggingface)。
-TRANSFORMER_PATH = "/home/animede/ComfyUI/models/diffusion_models/qwen_image_edit_2511_bf16.safetensors"
+# ComfyUI のインストール先は環境変数 COMFYUI_DIR で上書き可能(デフォルトは ~/ComfyUI)。
+# 特定ユーザー名を含む絶対パスをハードコードしないため、ホームディレクトリ相対で解決する。
+COMFYUI_DIR = os.environ.get("COMFYUI_DIR", os.path.expanduser("~/ComfyUI"))
+COMFYUI_MODELS_DIR = os.path.join(COMFYUI_DIR, "models")
+
+TRANSFORMER_PATH = os.path.join(
+    COMFYUI_MODELS_DIR, "diffusion_models", "qwen_image_edit_2511_bf16.safetensors"
+)
 TRANSFORMER_HF_REPO = "Comfy-Org/Qwen-Image-Edit_ComfyUI"
 TRANSFORMER_HF_FILE = "split_files/diffusion_models/qwen_image_edit_2511_bf16.safetensors"
 
-LORA_LIGHTNING_PATH = "/home/animede/ComfyUI/models/loras/Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors"
+LORA_LIGHTNING_PATH = os.path.join(
+    COMFYUI_MODELS_DIR, "loras", "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors"
+)
 LORA_LIGHTNING_HF_REPO = "lightx2v/Qwen-Image-Edit-2511-Lightning"
 LORA_LIGHTNING_HF_FILE = "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors"
 
-LORA_ANGLES_PATH = "/home/animede/ComfyUI/models/loras/Qwen-Edit-2509-Multiple-angles.safetensors"
+LORA_ANGLES_PATH = os.path.join(
+    COMFYUI_MODELS_DIR, "loras", "Qwen-Edit-2509-Multiple-angles.safetensors"
+)
 LORA_ANGLES_HF_REPO = "Comfy-Org/Qwen-Image-Edit_ComfyUI"
 LORA_ANGLES_HF_FILE = "split_files/loras/Qwen-Edit-2509-Multiple-angles.safetensors"
 
 # フォールバック用(2511 transformer と Multiple-angles LoRA が非互換だった場合)
-FALLBACK_TRANSFORMER_PATH = "/home/animede/ComfyUI/models/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors"
+FALLBACK_TRANSFORMER_PATH = os.path.join(
+    COMFYUI_MODELS_DIR, "diffusion_models", "qwen_image_edit_2509_fp8_e4m3fn.safetensors"
+)
 FALLBACK_TRANSFORMER_HF_REPO = "Comfy-Org/Qwen-Image-Edit_ComfyUI"
 FALLBACK_TRANSFORMER_HF_FILE = "split_files/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors"
 FALLBACK_PREFIX = "model.diffusion_model."

@@ -10,7 +10,7 @@ Web アプリケーションです。
 ## セットアップ
 
 ```bash
-cd /home/animede/charsheet
+cd charsheet
 python3 -m venv venv
 ./venv/bin/python -m pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu128
 ```
@@ -18,7 +18,7 @@ python3 -m venv venv
 ## 起動方法
 
 ```bash
-cd /home/animede/charsheet
+cd charsheet
 ./venv/bin/python -m uvicorn app:app --host 0.0.0.0 --port 8600
 ```
 
@@ -27,16 +27,23 @@ cd /home/animede/charsheet
 ## 外部依存(モデルファイル)
 
 以下は ComfyUI のモデルディレクトリを優先的に参照する(pipeline.py 冒頭の定数)。
+ComfyUI のインストール先は既定で `~/ComfyUI`(実行ユーザーのホームディレクトリ配下)を
+自動参照する。別の場所にある場合は環境変数 `COMFYUI_DIR` で上書きできる:
+
+```bash
+export COMFYUI_DIR=/path/to/ComfyUI
+```
+
 **該当パスにファイルが無い場合は、自動で Hugging Face Hub からダウンロードして
 通常の HF キャッシュ(`~/.cache/huggingface/hub/`)に保存する**(2 回目以降は
 再ダウンロードしない)。
 
-| ローカル優先パス(ComfyUI) | 無い場合の自動ダウンロード元 |
+| ローカル優先パス(`$COMFYUI_DIR/models/...`) | 無い場合の自動ダウンロード元 |
 |---|---|
-| `/home/animede/ComfyUI/models/diffusion_models/qwen_image_edit_2511_bf16.safetensors` | `Comfy-Org/Qwen-Image-Edit_ComfyUI`(split_files/diffusion_models/) |
-| `/home/animede/ComfyUI/models/loras/Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors` | `lightx2v/Qwen-Image-Edit-2511-Lightning` |
-| `/home/animede/ComfyUI/models/loras/Qwen-Edit-2509-Multiple-angles.safetensors` | `Comfy-Org/Qwen-Image-Edit_ComfyUI`(split_files/loras/) |
-| フォールバック用 `qwen_image_edit_2509_fp8_e4m3fn.safetensors` | `Comfy-Org/Qwen-Image-Edit_ComfyUI`(split_files/diffusion_models/) |
+| `diffusion_models/qwen_image_edit_2511_bf16.safetensors` | `Comfy-Org/Qwen-Image-Edit_ComfyUI`(split_files/diffusion_models/) |
+| `loras/Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors` | `lightx2v/Qwen-Image-Edit-2511-Lightning` |
+| `loras/Qwen-Edit-2509-Multiple-angles.safetensors` | `Comfy-Org/Qwen-Image-Edit_ComfyUI`(split_files/loras/) |
+| フォールバック用 `diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors` | `Comfy-Org/Qwen-Image-Edit_ComfyUI`(split_files/diffusion_models/) |
 
 vae / text_encoder / tokenizer / scheduler は HuggingFace キャッシュ(`Qwen/Qwen-Image`)、
 processor は `Qwen/Qwen-Image-Edit-2509` から取得(こちらは元々 HF から取得する設計で変更なし)。
@@ -124,10 +131,10 @@ charsheet/
 
 ## 使用モデル
 
-- transformer: `/home/animede/ComfyUI/models/diffusion_models/qwen_image_edit_2511_bf16.safetensors`
+- transformer: `$COMFYUI_DIR/models/diffusion_models/qwen_image_edit_2511_bf16.safetensors`
 - LoRA(両方 weight 1.0 で適用):
-  - `/home/animede/ComfyUI/models/loras/Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors`
-  - `/home/animede/ComfyUI/models/loras/Qwen-Edit-2509-Multiple-angles.safetensors`
+  - `$COMFYUI_DIR/models/loras/Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors`
+  - `$COMFYUI_DIR/models/loras/Qwen-Edit-2509-Multiple-angles.safetensors`
 - vae / text_encoder / tokenizer / scheduler: `Qwen/Qwen-Image` の HF キャッシュを再利用
 - processor: `Qwen/Qwen-Image-Edit-2509` の `processor/` のみ取得
 - サンプリング: steps=4, true_cfg_scale=1.0, shift=3.0(Lightning 4steps LoRA 用)

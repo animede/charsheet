@@ -6,7 +6,7 @@
 ## 起動方法
 
 ```bash
-cd /home/animede/charsheet
+cd charsheet
 ./venv/bin/python -m uvicorn app:app --host 0.0.0.0 --port 8600
 ```
 
