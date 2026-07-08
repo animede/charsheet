@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>キャラクターシート作成</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="app-header">
+  <h1>キャラクターシート作成</h1>
+  <p class="subtitle">1枚のキャラクター画像から 8方向のビューを自動生成します</p>
+</header>
+
+<main class="container">
+
+  <section class="panel" id="upload-panel">
+    <h2>1. 画像アップロード</h2>
+    <div id="dropzone" class="dropzone">
+      <p id="dropzone-text">ここに画像をドラッグ&ドロップ<br>または クリックして選択</p>
+      <img id="preview-image" class="preview-image hidden" alt="プレビュー">
+      <input type="file" id="file-input" accept="image/*" class="hidden">
+    </div>
+
+    <div id="split-section" class="split-section hidden">
+      <p id="split-message" class="split-message"></p>
+      <div id="split-grid" class="split-grid"></div>
+      <p class="split-use-whole">
+        <a href="#" id="use-whole-link">シート全体をそのまま使う</a>
+      </p>
+    </div>
+
+    <div class="form-row">
+      <label for="seed-input">seed(任意、デフォルト 0)</label>
+      <input type="number" id="seed-input" value="0" step="1">
+    </div>
+
+    <div class="form-row">
+      <button id="generate-btn" disabled>キャラクターシート生成</button>
+    </div>
+
+    <p id="error-message" class="error-message hidden"></p>
+    <p id="status-message" class="status-message hidden"></p>
+  </section>
+
+  <section class="panel" id="views-panel">
+    <h2>2. 8方向ビュー</h2>
+    <div id="views-grid" class="views-grid"></div>
+  </section>
+
+  <section class="panel hidden" id="sheet-panel">
+    <h2>3. キャラクターシート</h2>
+    <img id="sheet-image" class="sheet-image" alt="キャラクターシート">
+    <div class="form-row">
+      <button id="download-zip-btn">一括ダウンロード (ZIP)</button>
+      <button id="download-sheet-btn" class="secondary">シート画像のみダウンロード</button>
+      <button id="remove-bg-all-btn" class="secondary">全方向の背景を削除</button>
+    </div>
+  </section>
+
+</main>
+
+<div id="lightbox" class="lightbox hidden">
+  <span id="lightbox-close" class="lightbox-close">&times;</span>
+  <img id="lightbox-image" class="lightbox-image" alt="拡大表示">
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

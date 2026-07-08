@@ -1,0 +1,388 @@
+:root {
+  --color-bg: #f5f6fa;
+  --color-panel: #ffffff;
+  --color-border: #e0e2e8;
+  --color-primary: #4a63e7;
+  --color-primary-hover: #3a4fd0;
+  --color-text: #26282f;
+  --color-subtext: #767a85;
+  --color-error: #d64545;
+  --color-success: #2e9e5b;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Noto Sans CJK JP", "Hiragino Kaku Gothic ProN", "Yu Gothic",
+    "Segoe UI", sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.app-header {
+  text-align: center;
+  padding: 28px 16px 12px;
+}
+
+.app-header h1 {
+  margin: 0 0 4px;
+  font-size: 26px;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--color-subtext);
+  font-size: 14px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+}
+
+.panel h2 {
+  margin-top: 0;
+  font-size: 18px;
+  border-left: 4px solid var(--color-primary);
+  padding-left: 10px;
+}
+
+.dropzone {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  cursor: pointer;
+  padding: 16px;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: center;
+  color: var(--color-subtext);
+}
+
+.dropzone.dragover {
+  border-color: var(--color-primary);
+  background: #eef1ff;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 360px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.form-row {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.form-row label {
+  font-size: 14px;
+  color: var(--color-subtext);
+}
+
+.form-row input[type="number"] {
+  width: 120px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+button {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+button:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+button:disabled {
+  background: #b8bcc8;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: #ffffff;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+button.secondary:hover:not(:disabled) {
+  background: #eef1ff;
+}
+
+.error-message {
+  color: var(--color-error);
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.status-message {
+  color: var(--color-success);
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.split-section {
+  margin-top: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  background: #fafbfc;
+}
+
+.split-message {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.split-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.split-cell {
+  position: relative;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #ffffff;
+  aspect-ratio: 3 / 4;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.split-cell:hover {
+  border-color: #9aa7ef;
+}
+
+.split-cell.selected {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(74, 99, 231, 0.35);
+}
+
+.split-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.split-cell-num {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+}
+
+.split-use-whole {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.split-use-whole a {
+  color: var(--color-primary);
+}
+
+.views-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 800px) {
+  .views-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.view-tile {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #fafbfc;
+  display: flex;
+  flex-direction: column;
+}
+
+.view-tile-image-wrap {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  background: #eceef2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.view-tile-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.view-tile-label {
+  padding: 8px 10px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.view-tile-label .ja {
+  font-weight: bold;
+}
+
+.view-tile-label .en {
+  color: var(--color-subtext);
+  font-size: 11px;
+}
+
+.view-tile-status {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+}
+
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -15px 0 0 -15px;
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(74, 99, 231, 0.25);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  z-index: 2;
+}
+
+.view-tile-actions {
+  display: flex;
+  gap: 6px;
+  padding: 0 10px 8px;
+  justify-content: center;
+}
+
+.tile-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.tile-btn.secondary {
+  background: #ffffff;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.tile-btn.secondary:hover:not(:disabled) {
+  background: #eef1ff;
+}
+
+.refine-form {
+  display: flex;
+  gap: 6px;
+  padding: 0 10px 10px;
+}
+
+.refine-form input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sheet-image {
+  display: block;
+  max-width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  margin: 0 auto;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  cursor: zoom-out;
+}
+
+.lightbox-image {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 6px;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 34px;
+  color: white;
+  cursor: pointer;
+}
+
+/* --- 背景削除(透過画像)対応 --- */
+/* 透過部分が見えるように市松模様を敷く */
+.view-tile-image-wrap img,
+.lightbox-image {
+  background: repeating-conic-gradient(#e8e8e8 0% 25%, #ffffff 0% 50%) 0 0 / 20px 20px;
+}
